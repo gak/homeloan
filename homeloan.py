@@ -1,65 +1,80 @@
 #!/usr/bin/env python
 
+import math
+
+FREQ_YEARLY = 0
+FREQ_MONTHLY = 1
+FREQ_FORTNIGHTLY = 2
+FREQ_WEEKLY = 3
+
 class Loan:
 
-    def __init__(self, principal, annual_interest_rate, years):
+    def __init__(self, principal, annual_interest_rate, years, frequency):
         self.principal = principal
         self.annual_interest_rate = annual_interest_rate
         self.years = years
+        self.frequency = frequency
+
+        self.calculate_frequency()
+        self.factor = self.calculate_factor()
+
+    def calculate_frequency(self):
+        if self.frequency == FREQ_YEARLY:
+            div = 1
+        if self.frequency == FREQ_MONTHLY:
+            div = 12
+        if self.frequency == FREQ_FORTNIGHTLY:
+            div = 365.24 / 14.
+        if self.frequency == FREQ_WEEKLY:
+            div = 365.24 / 7.
+
+        self.interest_rate = self.annual_interest_rate / div
+        self.periods = self.years * div
+        self.periods = math.ceil(self.periods)
 
     @property
-    def monthly_interest_rate(self):
-        return self.annual_interest_rate / 12.
+    def payment(self):
+        return self.principal / self.factor
 
-    @property
-    def months(self):
-        return self.years * 12.
-
-    @property
-    def monthly_factor(self):
+    def calculate_factor(self):
         factor = 0.
-        base_rate = 1. + self.monthly_interest_rate
+        base_rate = 1. + self.interest_rate
         denominator = base_rate
-        for a in xrange(self.months):
+        for a in xrange(self.periods):
             factor += (1. / denominator)
             denominator *= base_rate
         return factor
 
-    @property
-    def monthly_payment(self):
-        return self.principal / self.monthly_factor
-
     def loop(self):
 
-        current_month = 1
-        current_year = 1
+        current_period = 1
         principal = self.principal
 
-        # while current_month <= self.months:
         while principal > 0:
 
-            interest_paid = principal * self.monthly_interest_rate
-            principal_paid = self.monthly_payment - interest_paid
-#            if current_month == 12:
-#                principal_paid += 5000
+            interest_paid = principal * self.interest_rate
+            principal_paid = self.payment - interest_paid
             remaining_balance = principal - principal_paid
 
             principal = remaining_balance
 
-            print '%2i %2i' % (int(current_month / 12), current_month % 12),
+            print '%2i' % current_period,
             print 'interest paid: %8.2f' % interest_paid,
             print 'principal paid: %8.2f' % principal_paid,
             print 'remaining balance: %9.2f' % remaining_balance
 
-            current_month += 1
+            current_period += 1
 
     def print_info(self):
-        print 'monthly interest rate:', self.monthly_interest_rate
-        print 'repayments:', self.months
-        print 'monthly repayment:', self.monthly_payment
+        print 'repayments: %7i' % self.periods,
+        print 'period repayment: %10.2f' % self.payment,
+        print
 
 if __name__ == '__main__':
-    loan = Loan(450000., 0.08, 20)
-    loan.loop()
+    loan = Loan(450000., 0.08, 20, FREQ_YEARLY)
+    loan.print_info()
+    loan = Loan(450000., 0.08, 20, FREQ_MONTHLY)
+    loan.print_info()
+    loan = Loan(450000., 0.08, 20, FREQ_WEEKLY)
     loan.print_info()
 
