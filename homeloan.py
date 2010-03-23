@@ -49,12 +49,15 @@ class Loan:
 
         current_period = 1
         principal = self.principal
+        total_interest_paid = 0
 
         while principal > 0:
 
             interest_paid = principal * self.interest_rate
             principal_paid = self.payment - interest_paid
             remaining_balance = principal - principal_paid
+
+            total_interest_paid += interest_paid
 
             principal = remaining_balance
 
@@ -65,9 +68,13 @@ class Loan:
 
             current_period += 1
 
+        return total_interest_paid
+
     def print_info(self):
+        total_interest_paid = self.loop()
         print 'repayments: %7i' % self.periods,
         print 'period repayment: %10.2f' % self.payment,
+        print 'total interest_paid: %10.2f' % total_interest_paid,
         print
 
 if __name__ == '__main__':
