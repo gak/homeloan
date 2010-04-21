@@ -45,7 +45,7 @@ class Loan:
             denominator *= base_rate
         return factor
 
-    def loop(self):
+    def loop(self, output=False):
 
         current_period = 1
         principal = self.principal
@@ -61,10 +61,11 @@ class Loan:
 
             principal = remaining_balance
 
-            print '%2i' % current_period,
-            print 'interest paid: %8.2f' % interest_paid,
-            print 'principal paid: %8.2f' % principal_paid,
-            print 'remaining balance: %9.2f' % remaining_balance
+            if output:
+                print '%2i' % current_period,
+                print 'interest paid: %8.2f' % interest_paid,
+                print 'principal paid: %8.2f' % principal_paid,
+                print 'remaining balance: %9.2f' % remaining_balance
 
             current_period += 1
 
@@ -78,10 +79,7 @@ class Loan:
         print
 
 if __name__ == '__main__':
-    loan = Loan(450000., 0.08, 20, FREQ_YEARLY)
-    loan.print_info()
-    loan = Loan(450000., 0.08, 20, FREQ_MONTHLY)
-    loan.print_info()
-    loan = Loan(450000., 0.08, 20, FREQ_WEEKLY)
+    loan = Loan(450000., 0.08, 15, FREQ_MONTHLY)
+    loan.loop(True)
     loan.print_info()
 
