@@ -51,11 +51,14 @@ class Loan:
         principal = self.principal
         total_interest_paid = 0
 
-        while principal > 0:
+        while True:
 
             interest_paid = principal * self.interest_rate
             principal_paid = self.payment - interest_paid
             remaining_balance = principal - principal_paid
+
+            if remaining_balance <= 0:
+                break
 
             total_interest_paid += interest_paid
 
@@ -79,7 +82,7 @@ class Loan:
         print
 
 if __name__ == '__main__':
-    loan = Loan(450000., 0.08, 15, FREQ_MONTHLY)
+    loan = Loan(700000., 0.08, 30, FREQ_MONTHLY)
     loan.loop(True)
     loan.print_info()
 
