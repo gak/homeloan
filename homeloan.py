@@ -50,17 +50,32 @@ class Loan:
             denominator *= base_rate
         return factor
 
+    def get_extra_principal_paid(self, days):
+        return 0
+
     def loop(self, output=False):
 
         current_period = 1
         principal = self.principal
         total_interest_paid = 0
         current_date = date.today()
+        days_in_period = Loan.interval_for_frequency(self.frequency)
+        days = 0
 
         while True:
 
+            current_period += 1
+            delta = timedelta(days=days_in_period)
+            current_date += delta
+            days += days_in_period
+
             interest_paid = principal * self.interest_rate
             principal_paid = self.payment - interest_paid
+
+            # extra repayments?
+            extra_principal_paid = self.extra_principal_paid(days)
+            principal_paid += extra_principal_paid
+
             remaining_balance = principal - principal_paid
 
             if remaining_balance <= 0:
@@ -75,26 +90,31 @@ class Loan:
             if output:
                 print '%2i' % current_period,
                 print '%10s' % current_date,
+                print 'Year: %4.1f' % (days / DAYS_IN_YEAR),
                 print 'interest paid: %8.2f' % interest_paid,
-                print 'principal paid: %8.2f' % principal_paid,
+                print 'principal paid: %8.2f (+%5.2f)' % (principal_paid,
+                        extra_principal_paid),
                 print 'paid: %8.2f' % total_paid,
                 print 'remaining balance: %9.2f' % remaining_balance
 
-            current_period += 1
-            days = Loan.interval_for_frequency(self.frequency)
-            current_date += timedelta(days=days)
+
+        self.real_periods = current_period
 
         return total_interest_paid
 
     def print_info(self):
         total_interest_paid = self.loop()
-        print 'repayments: %7i' % self.periods,
-        print 'period repayment: %10.2f' % self.payment,
-        print 'total interest_paid: %10.2f' % total_interest_paid,
+        print 'Loan amount:          %7i' % self.principal,
+        print 'Interest rate         %2.2f%%' % (self.annual_interest_rate *
+                100),
+        print 'predicted repayments: %3i' % self.periods,
+        print 'real repayments:      %3i' % self.real_periods,
+        print 'period repayment:     %7.2f' % self.payment,
+        print 'total interest_paid:  %10.2f' % total_interest_paid
         print
 
 if __name__ == '__main__':
-    loan = Loan(420000 * 0.8, 0.09, 30, FREQ_MONTHLY)
-    loan.loop(True)
+    loan = Loan(420000 * 0.8, 0.09, 15, FREQ_MONTHLY)
+    loan.loop(False)
     loan.print_info()
 
