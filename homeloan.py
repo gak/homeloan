@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
 import math
+from datetime import date, timedelta
 
 FREQ_YEARLY = 0
 FREQ_MONTHLY = 1
 FREQ_FORTNIGHTLY = 2
 FREQ_WEEKLY = 3
+
+DAYS_IN_YEAR = 365.24
 
 class Loan:
 
@@ -14,23 +17,25 @@ class Loan:
         self.annual_interest_rate = annual_interest_rate
         self.years = years
         self.frequency = frequency
-
         self.calculate_frequency()
         self.factor = self.calculate_factor()
 
-    def calculate_frequency(self):
-        if self.frequency == FREQ_YEARLY:
-            div = 1
-        if self.frequency == FREQ_MONTHLY:
-            div = 12
-        if self.frequency == FREQ_FORTNIGHTLY:
-            div = 365.24 / 14.
-        if self.frequency == FREQ_WEEKLY:
-            div = 365.24 / 7.
+    @staticmethod
+    def interval_for_frequency(freq):
+        if FREQ_YEARLY:
+            return DAYS_IN_YEAR
+        if FREQ_MONTHLY:
+            return DAYS_IN_YEAR / 12
+        if FREQ_FORTNIGHTLY:
+            return 14
+        if FREQ_WEEKLY:
+            return 7
 
+    def calculate_frequency(self):
+        div = DAYS_IN_YEAR / self.interval_for_frequency(self.frequency)
         self.interest_rate = self.annual_interest_rate / div
         self.periods = self.years * div
-        self.periods = math.ceil(self.periods)
+        self.periods = int(math.ceil(self.periods))
 
     @property
     def payment(self):
@@ -50,6 +55,7 @@ class Loan:
         current_period = 1
         principal = self.principal
         total_interest_paid = 0
+        current_date = date.today()
 
         while True:
 
@@ -64,13 +70,19 @@ class Loan:
 
             principal = remaining_balance
 
+            total_paid = interest_paid + principal_paid
+
             if output:
                 print '%2i' % current_period,
+                print '%10s' % current_date,
                 print 'interest paid: %8.2f' % interest_paid,
                 print 'principal paid: %8.2f' % principal_paid,
+                print 'paid: %8.2f' % total_paid,
                 print 'remaining balance: %9.2f' % remaining_balance
 
             current_period += 1
+            days = Loan.interval_for_frequency(self.frequency)
+            current_date += timedelta(days=days)
 
         return total_interest_paid
 
@@ -82,7 +94,7 @@ class Loan:
         print
 
 if __name__ == '__main__':
-    loan = Loan(700000., 0.08, 30, FREQ_MONTHLY)
+    loan = Loan(420000 * 0.8, 0.09, 30, FREQ_MONTHLY)
     loan.loop(True)
     loan.print_info()
 
