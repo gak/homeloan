@@ -73,7 +73,7 @@ class Loan:
             principal_paid = self.payment - interest_paid
 
             # extra repayments?
-            extra_principal_paid = self.extra_principal_paid(days)
+            extra_principal_paid = self.get_extra_principal_paid(days)
             principal_paid += extra_principal_paid
 
             remaining_balance = principal - principal_paid
@@ -114,7 +114,7 @@ class Loan:
         print
 
 if __name__ == '__main__':
-    loan = Loan(420000 * 0.8, 0.09, 15, FREQ_MONTHLY)
+    loan = Loan(465000 * 0.8, 0.07, 30, FREQ_MONTHLY)
     loan.loop(False)
     loan.print_info()
 
